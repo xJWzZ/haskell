@@ -8,83 +8,26 @@ module Main where
 
 main :: IO ()
 
-
-
-replicate' :: (Num i, Ord i) => i -> a -> [a]
-replicate' n x
-  | n <= 0 = []
-  | otherwise = x:replicate' (n-1) x
-
--- Lecture 11: Recursion
---  [] -> [[]]
---  [1] -> [[], [1]]
--- [2] -> [[], [1, 2]]
--- [1, 2] -> [[], [1], [1,2]]
--- [1,2,3] -> [[], [1], [1,2], [1,2,3]]
-
--- inits :: [a] -> [[a]]
--- inits [] = [[]]
--- inits (a:as) = []:[a:is
---                     | is <- init as
---                     ]
--- -- inits without list comprehensions
--- inits2 :: [a] -> [[a]]
--- inits2 = inits2' []
---
--- inits2' :: [a] -> [a] -> [[a]]
--- inits2' p [ ]   = [p]
--- inits2' p(a:as) = p : init' (p + [a]) as
-
-
--- inits in reverse order
-reverseInits :: [a] -> [[a]]
-reverseInits []     = [[]]
-reverseInits (a:as) = as:reverseInits(reverseInits a)
-
-
--- concat [[1], [], [3,2]] -> [1,3,2]
-
-concat' :: [[a]] -> [a]
-concat' []       = []
-concat' (as:ass) = as ++ concat' ass
-
-group [1,2,1,3] -> [[1,1], [2], [3]]
-
-group :: [a] -> [[a]]
-group [] = []
-group as = eqs:group nes
-              where eqs = [a | a <- as a== head as]
-                    nes = [a | a <- as, a /= head as]
---
-
-change_paint :: [a] -> [a]
-change_paint (a:as) = as:a
-
+-- Takes in colours and walls and begins recursive function
 paint_internal_bricks :: [a] -> [[a]] -> [[a]]
--- call paint_wall on first item in list
--- call paint_internal_bricks on the remainder of list
-paint_internal_bricks [] = []
-paint_internal_bricks b (a:as) = paint_wall b a ++ paint_internal_bricks b as
+paint_internal_bricks colours walls = paint_wall colours walls colours
 
-paint_wall :: a -> [a] -> [a] -> [a]
---
-paint_wall ind colours wall
-  | ind == length wall -1 = wall
-  | ind == 0 = wall
-  | otherwise = change_paint ind colours wall
+-- Takes in colours, walls, and the full list of colours.
+-- For each wall, calls paint_bricks
+paint_wall :: [a] -> [[a]] -> [a] -> [[a]]
+paint_wall colours ((brick:bricks):walls) full_colours
+  | null walls = [(brick:paint_bricks colours ((bricks):walls) full_colours)]
+  | null bricks = ([brick] : paint_wall colours walls full_colours)
+  | otherwise = ((brick:paint_bricks colours ((bricks):walls) full_colours) : paint_wall colours walls full_colours)
 
--- takes in the index, the colour, and the list and returns the list
-paint_brick :: a -> a -> [a] -> [a]
-paint_brick ind colour lst =
+-- Takes in colours, walls, and list of all colours.
+-- paints each internal brick recursively
+paint_bricks :: [a] -> [[a]] -> [a] -> [a]
+paint_bricks (colour:colours) ((first_brick:bricks):walls) full_colours
+  | null colours = colour : paint_bricks full_colours ((bricks):walls) full_colours
+  | null bricks = [first_brick]
+  | otherwise = colour : paint_bricks colours ((bricks):walls) full_colours
 
-
-replaceValue :: Int -> a -> [a] -> [a]
-replaceValue _ _ [] = []
-replaceValue n newValue (a:as)
-  | n == 0 = newVal:as
-  | otherwise = x:replaceValue (n-1) newVal xs
-
-
-
-main = do
-  print(reverseInits [1,2,3,4])
+main = putStrLn (show (paint_internal_bricks colours walls))
+  where colours = [0,1,2]
+        walls = [[3],[3,3],[3,3,3],[3,3,3],[3,3,3,3,3],[3,3,3,3,3,3]]
